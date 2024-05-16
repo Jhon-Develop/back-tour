@@ -1,7 +1,7 @@
-// authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail } = require('../models/userModel');
+const { createUser, getUserByEmail} = require('../models/userModel');
+const userModel = require('../models/userModel');
 
 exports.register = async (req, res) => {
     try {
@@ -18,14 +18,19 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Crear un nuevo usuario
-        user = await createUser(username, email, hashedPassword, role);
+        const result = await createUser(username, email, hashedPassword, role);
 
-        res.status(201).json({ message: 'Usuario creado exitosamente', user });
+        if (result.success) {
+            res.status(201).json({ message: 'Usuario creado exitosamente', user: result });
+        } else {
+            throw result.error;
+        }
     } catch (err) {
         console.error('Error en register:', err);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 };
+
 
 exports.login = async (req, res) => {
     try{
@@ -83,13 +88,12 @@ exports.verifyToken = (req, res) => {
     }
 }
 
-exports.getAll = async (req, res) => {
-    try{
-        const users = await getAllUsers()
-        res.json(users);
-        console.log(users);
-    }catch{
-        console.error('Error en getAll:', err);
+exports.getAllUsers = async (res) => {
+    try {
+        const users = await userModel.getAllUsers();
+        res.status(200).json(users);
+    } catch (err) {
+        console.error('Error en getAllUsers:', err);
         res.status(500).json({ message: 'Error en el servidor' });
     }
-}
+};

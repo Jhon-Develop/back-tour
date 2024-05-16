@@ -3,34 +3,43 @@ const { pool } = require('../config/database');
 exports.createUser = async (username, email, hashedPassword, role) => {
     try {
         const query = `
-        INSERT INTO users (username, email, password, rol) 
+        INSERT INTO users (username, email, password, role) 
         VALUES (?, ?, ?, ?);
         `;
-
-        const result = await pool.query(query, [username, email, hashedPassword, role]);
+        const [result] = await pool.execute(query, [username, email, hashedPassword, role]);
         console.log('Resultado:', result);
-        return { success: true }; // Indica éxito en la operación
+        return { success: true };
     } catch (error) {
         console.error('Error al crear usuario:', error);
-        return { success: false, error }; // Indica que hubo un error en la operación
+        return { success: false, error };
     }
 };
-
 
 exports.getUserByEmail = async (email) => {
-    const query = `SELECT * FROM users WHERE email = ?`;
-    const { rows } = await pool.query(query, [email]);
-    if (rows && rows.length > 0) {
-        return rows[0]; // Devuelve el primer usuario encontrado
-    } else {
-        return null; // Devuelve null si no se encuentra ningún usuario con ese email
+    try {
+        const query = `SELECT * FROM users WHERE email = ?`;
+        const [rows] = await pool.execute(query, [email]);
+        if (rows.length > 0) {
+            return rows[0];
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al obtener usuario por email:', error);
+        throw error;
     }
 };
 
-exports.getAllUser = async (username) => {
-    const query = `SELECT * FROM users `;
-    const { rows } = await pool.query(query, [username]);
-    if (rows && rows.length > 0) {
-        return rows;// Devuelve el primer usuario encontrado
+
+// Función para obtener todos los usuarios
+exports.getAllUsers = async () => {
+    try {
+        const query = `SELECT * FROM users`;
+        const [rows] = await pool.query(query);
+        return rows;
+    } catch (error) {
+        console.error('Error al obtener todos los usuarios:', error);
+        throw error; // Lanza el error para que pueda ser manejado por la función que llame a getAllUsers
     }
-}
+};
+

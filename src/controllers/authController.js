@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail} = require('../models/userModel');
-const userModel = require('../models/userModel');
+const { createUser, getUserByEmail, getRoleByName, updateUser } = require('../models/userModel');
 
 exports.register = async (req, res) => {
     try {
@@ -13,12 +12,18 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: 'El usuario ya existe' });
         }
 
+        // Verificar si el rol existe
+        const roleData = await getRoleByName(role);
+        if (!roleData) {
+            return res.status(400).json({ message: 'Rol no existente' });
+        }
+
         // Encriptar la contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Crear un nuevo usuario
-        const result = await createUser(username, email, hashedPassword, role);
+        const result = await createUser(username, email, hashedPassword, roleData.role_id);
 
         if (result.success) {
             res.status(201).json({ message: 'Usuario creado exitosamente', user: result });
@@ -31,32 +36,29 @@ exports.register = async (req, res) => {
     }
 };
 
-
 exports.login = async (req, res) => {
-    try{
+    try {
         const { email, password } = req.body;
 
-        // verificacion de si el usuario existe
+        // Verificar si el usuario existe
         const user = await getUserByEmail(email);
-        console.log(email, user);
         if (!user) {
-            console.log("Usuario no existente");
-            return res.status(400).json({ message: 'Ese usuarios no existe' })
+            return res.status(400).json({ message: 'Ese usuario no existe' });
         }
 
-        // Comparación de contraseñas
+        // Comparar contraseñas
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch){
-            return res.status(400).json({ message: 'Usearios o contraseña incorrectos' })
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Usuario o contraseña incorrectos' });
         }
 
-        // generador de token JWT
-        const token = jwt.sign({ id: user.id}, process.env.JWT_SECRET, {
+        // Generar token JWT
+        const token = jwt.sign({ id: user.user_id, email: user.email }, process.env.JWT_SECRET, {
             expiresIn: '1h',
         });
 
-        res.json({ token, user: { id: user.id, username: user.username, email: user.email} });
-    }catch (err) {
+        res.json({ token, user: { id: user.user_id, username: user.username, email: user.email } });
+    } catch (err) {
         console.error('Error en login:', err);
         res.status(500).json({ message: 'Error en el servidor' });
     }
@@ -73,20 +75,17 @@ exports.verifyToken = (req, res) => {
         jwt.verify(token, process.env.JWT_SECRET);
         res.json({ valid: true });
     } catch (err) {
-        // Check is instance of TokenExpiredError.
         if (err.name === 'TokenExpiredError') {
             return res.status(401).json({ message: 'Token expirado', valid: false });
         }
-        // check if instance of JsonWebTokenError.
         if (err.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Token invalido', valid:false });
+            return res.status(401).json({ message: 'Token inválido', valid: false });
         }
-        // check if instance of Error
         if (err instanceof Error) {
             return res.status(500).json({ message: 'Error en el servidor', valid: false });
         }
     }
-}
+};
 
 exports.getAllUsers = async (res) => {
     try {
@@ -94,6 +93,54 @@ exports.getAllUsers = async (res) => {
         res.status(200).json(users);
     } catch (err) {
         console.error('Error en getAllUsers:', err);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+};
+
+// Actualizar un usuario por ID
+exports.updateUser = async (req, res) => {
+    try {
+        const { username, email, password, role } = req.body;
+        const { userId } = req.params;
+
+        let updatedData = {};
+
+        // Verificar si el usuario existe
+        let user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ message: 'Ese usuario no existe' });
+        }
+
+        // Verificar si el rol existe
+        if (role) {
+            const roleData = await getRoleByName(role);
+            if (!roleData) {
+                return res.status(400).json({ message: 'Rol no existente' });
+            }
+            updatedData.role_id = roleData.role_id;
+        }
+
+        // Encriptar la contraseña si se proporciona
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            updatedData.password = hashedPassword;
+        }
+
+        // Añadir campos actualizables al objeto updatedData
+        if (username) updatedData.username = username;
+        if (email) updatedData.email = email;
+
+        // Actualizar el usuario
+        const result = await updateUser(userId, updatedData);
+
+        if (result.success) {
+            res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+        } else {
+            throw result.error;
+        }
+    } catch (err) {
+        console.error('Error en updateUser:', err);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 };

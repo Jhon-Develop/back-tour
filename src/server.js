@@ -11,7 +11,7 @@ const port = process.env.PORT || 4000;
         connection.release();
 
         app.listen(port, () => {
-            console.log(`Servidor corriendo en el puerto http://localhost:${port}`);
+            console.log(`Servidor corriendo en el puerto http://localhosst:${port}`);
         });
     } catch (err) {
         console.error('Error al conectar a la base de datos', err);

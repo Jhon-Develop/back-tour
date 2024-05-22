@@ -3,10 +3,11 @@ const router = express.Router();
 const tourController = require('../../controllers/tourController');
 const authMiddleware = require('../../middlewares/authMiddleware');
 
-router.post('/tours', authMiddleware, tourController.createTour);
-router.get('/tours/:id', authMiddleware, tourController.getTourById);
-router.put('/tours/:id', authMiddleware, tourController.updateTour);
-router.delete('/tours/:id', authMiddleware, tourController.deleteTour);
-router.get('/tours', authMiddleware, tourController.getAllTours); // Nueva ruta para obtener todos los tours
+
+router.post('/', authMiddleware, tourController.createTour);
+router.get('/:id', authMiddleware, tourController.getTourById);
+router.put('/:id', authMiddleware, tourController.updateTour);
+router.delete('/:id', authMiddleware, tourController.deleteTour);
+router.get('/', authMiddleware, tourController.getAllTours);
 
 module.exports = router;

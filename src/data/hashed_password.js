@@ -6,4 +6,4 @@ const generateHashedPassword = async (password) => {
     console.log('Hashed Password:', hashedPassword);
 };
 
-generateHashedPassword();
+generateHashedPassword(password);

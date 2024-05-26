@@ -88,3 +88,17 @@ exports.getReviewsByTour = async (req, res) => {
         res.status(500).json({ message: 'Error en el servidor' });
     }
 };
+
+// Obtener todas las reseñas
+exports.getAllReviews = async (req, res) => {
+    try {
+        console.log('Entrando en getAllReviews controller...');
+
+        const reviews = await reviewModel.getAllReviews();
+
+        res.json(reviews);
+    } catch (err) {
+        console.error('Error en getAllReviews controller:', err);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+};

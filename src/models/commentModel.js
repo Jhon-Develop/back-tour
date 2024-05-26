@@ -72,3 +72,19 @@ exports.deleteComment = async (id) => {
         return { success: false, error };
     }
 };
+
+// Actualizar respuesta a un comentario
+exports.updateResponseComment = async (id, name, description) => {
+    try {
+        const query = `
+            UPDATE comments 
+            SET name = ?, description = ? 
+            WHERE comment_id = ? AND answer_id IS NOT NULL
+        `;
+        const [result] = await pool.execute(query, [name, description, id]);
+        return { success: result.affectedRows > 0 };
+    } catch (error) {
+        console.error('Error al actualizar respuesta:', error);
+        return { success: false, error };
+    }
+};

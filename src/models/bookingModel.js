@@ -1,47 +1,53 @@
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-// Crear una reserva y el pago correspondiente
 exports.createBooking = async (user_id, tour_id, paymentData) => {
     const { value, quota, card_number, cvc, request_payment, date } = paymentData;
-
+    
     try {
-        // Eliminar guiones del número de tarjeta antes de encriptar
-        const cleanedCardNumber = card_number.replace(/-/g, '');
-        const hashedCardNumber = await bcrypt.hash(cleanedCardNumber, 10);
+        // Encriptar el card_number y cvc
+        const hashedCardNumber = await bcrypt.hash(card_number, 10);
         const hashedCVC = await bcrypt.hash(cvc, 10);
 
         // Iniciar una transacción
-        await pool.getConnection(async (conn) => {
-            await conn.beginTransaction();
+        const connection = await pool.getConnection();
 
-            try {
-                // Insertar en la tabla payments
-                const [paymentResult] = await conn.execute(`
-                    INSERT INTO payments (value, quota, card_number, cvc, request_payment, date)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                `, [value, quota, hashedCardNumber, hashedCVC, request_payment, date]);
+        try {
+            await connection.beginTransaction();
 
-                const payment_id = paymentResult.insertId;
+            // Asegúrate de que el tour_id existe
+            // const [tourCheck] = await connection.execute(`
+            //     SELECT tour_id FROM tours WHERE id = ?
+            // `, [tour_id]);
 
-                // Insertar en la tabla bookings
-                const [bookingResult] = await conn.execute(`
-                    INSERT INTO bookings (user_id, tour_id, payment_id, created_at)
-                    VALUES (?, ?, ?, NOW())
-                `, [user_id, tour_id, payment_id]);
+            // if (tourCheck.length === 0) {
+            //     throw new Error(`El tour_id ${tour_id} no existe.`);
+            // }
 
-                // Confirmar la transacción
-                await conn.commit();
+            // Insertar en la tabla payments
+            const [paymentResult] = await connection.execute(`
+                INSERT INTO payments (value, quota, card_number, cvc, request_payment, date)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [value, quota, hashedCardNumber, hashedCVC, request_payment, date]);
 
-                return { success: true, bookingId: bookingResult.insertId, paymentId: payment_id };
-            } catch (error) {
-                await conn.rollback();
-                console.error('Error al crear la reserva y el pago:', error);
-                return { success: false, error };
-            } finally {
-                conn.release();
-            }
-        });
+            const payment_id = paymentResult.insertId;
+
+            // Insertar en la tabla bookings
+            const [bookingResult] = await connection.execute(`
+                INSERT INTO bookings (user_id, tour_id, payment_id, created_at)
+                VALUES (?, ?, ?, NOW())
+            `, [user_id, tour_id, payment_id]);
+
+            await connection.commit();
+
+            return { success: true, bookingId: bookingResult.insertId, paymentId: payment_id };
+        } catch (error) {
+            await connection.rollback();
+            console.error('Error al crear la reserva y el pago:', error);
+            return { success: false, error };
+        } finally {
+            connection.release();
+        }
     } catch (error) {
         console.error('Error en la transacción de la reserva:', error);
         return { success: false, error };
@@ -107,5 +113,19 @@ exports.deletePayment = async (payment_id) => {
     } catch (error) {
         console.error('Error al eliminar pago:', error);
         return { success: false, error };
+    }
+};
+
+// Obtener todas las reservas
+exports.getAllBookings = async () => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT * FROM bookings
+        `);
+
+        return rows;
+    } catch (error) {
+        console.error('Error al obtener todas las reservas:', error);
+        throw error;
     }
 };

@@ -45,3 +45,17 @@ exports.getReviewsByTour = async (tour_id) => {
         throw error;
     }
 };
+
+// Obtener todas las reseñas
+exports.getAllReviews = async () => {
+    try {
+        const [reviews] = await pool.execute(`
+            SELECT * FROM tour_reviews
+        `);
+
+        return reviews;
+    } catch (error) {
+        console.error('Error al obtener todas las reviews:', error);
+        throw error;
+    }
+};

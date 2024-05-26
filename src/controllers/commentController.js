@@ -155,3 +155,26 @@ exports.deleteComment = async (req, res) => {
         res.status(500).json({ message: 'Error en el servidor' });
     }
 };
+
+// Actualizar respuesta a un comentario
+exports.updateResponseComment = async (req, res) => {
+    try {
+        console.log('Entrando en updateResponseComment controller...');
+        const { id } = req.params;
+        const { name, description } = req.body;
+        console.log('Data recibida:', req.body);
+
+        const result = await commentModel.updateResponseComment(id, name, description);
+
+        if (result.success) {
+            console.log('Respuesta actualizada exitosamente');
+            res.json({ message: 'Respuesta actualizada exitosamente' });
+        } else {
+            console.error('Error al actualizar respuesta:', result.error);
+            res.status(500).json({ message: 'Error en el servidor o respuesta no encontrada' });
+        }
+    } catch (err) {
+        console.error('Error al actualizar respuesta:', err);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+};

@@ -5,6 +5,7 @@ const authRoutes = require('./routes/public/authRoutes');
 const tourRoutes = require('./routes/private/tourRoutes');
 const commentRoutes = require('./routes/private/commentRoutes');
 const reviewRoutes = require('./routes/private/reviewRoutes');
+const bookingRoutes = require('./routes/private/bookingRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use('/auth', authRoutes);
 app.use('/tours', authMiddleware, tourRoutes);
 app.use('/comments', authMiddleware, commentRoutes);
 app.use('/reviews', authMiddleware, reviewRoutes);
+app.use('/bookings', authMiddleware, bookingRoutes);
 
 
 

@@ -1,0 +1,153 @@
+# Users
+// Register : With this url and this body, users are registered or created in the database, receiving these values. It should be noted that only three roles are accepted, if it is not any of these, an error will occur (admin, user, guide)
+POST http://localhost:4000/auth/register
+{
+    "username": "jhon",
+    "email": "jhonasprilla@gmail.com",
+    "password": "asprilla123",
+    "role": "Admin"
+}
+
+// Update user : With this url and this body, users are updated in the database, receiving these values. It should be noted that only three roles are accepted, if it is not any of these, an error will occur (admin, user, guide)
+PUT http://localhost:4000/auth/users/:id   
+{
+    "username": "jhon",
+    "email": "jhonasprilla@gmail.com",
+    "password": "asprilla123",
+    "role": "Admin"
+}
+
+// Login : With this url and this body, users are logged in, receiving these values. It should be noted that only three roles are accepted,but the role is not necessary for users to be logged in
+POST http://localhost:4000/auth/login
+{
+    "email": "jhonasprilla@gmail.com",
+    "password": "asprilla12"
+}
+
+// getAll Users : it's body not necessary for get all users
+GET http://localhost:4000/auth/users
+
+#
+#
+#
+
+# Tours
+// Create tour : This is the url and the data that the tures receive so that they can be created correctly and the database does not present errors
+POST http://localhost:4000/tours
+{
+    "name": "prueba",
+    "description": "example of description",
+    "city": "example of city",
+    "available": true,
+    "price": 500000,
+    "rating": 5,
+    "date": "2024-08-15",
+    "capacity": 10,
+    "category_name": "prueba"
+}
+
+//update tour : This url is for updating the tours and has the same body and the only thing would be to modify the desired content
+PUT http://localhost:4000/tours/:id
+{
+    "name": "prueba",
+    "description": "example of description",
+    "city": "example of city",
+    "available": true,
+    "price": 500000,
+    "rating": 5,
+    "date": "2024-08-15",
+    "capacity": 10,
+    "category_name": "prueba"
+}
+
+//getAll tour : it's body not necessary for get all tours
+GET http://localhost:4000/tours/
+
+#
+#
+#
+
+#tour - reviews
+// Create review : This is the url and the data that the reviews receive so that they can be created correctly and the database does not present errors http://localhost:4000/reviews/:tour_id/reviews
+POST http://localhost:4000/reviews/1/reviews
+{
+    "rating": 5,
+    "description": "Este tour fue increíble. Lo recomendaría a todos."
+}
+
+//update review : This url is for updating the reviews and has the same body and the only thing would be to modify the desired content http://localhost:4000/reviews/:review_id
+PUT http://localhost:4000/reviews/1
+{
+    "rating": 5,
+    "description": "Este tour fue increíble. Lo recomendaría a todos."
+}
+
+//getAll reviews : it's body not necessary for get all reviews
+GET http://localhost:4000/reviews/
+
+#
+#
+#
+
+# Bookings
+// Create booking : This is the url and the data that the bookings receive so that they can be created correctly and the database does not present errors http
+POST http://localhost:4000/bookings/
+{
+    "value": 150000,
+    "quota": 3,
+    "card_number": "5678-9893-5623-8367",
+    "cvc": "123",
+    "request_payment": "full",
+    "date": "2024-05-25"
+}
+
+//update booking : This url is for updating the bookings and has the same body and the only thing would be to modify the desired content http://localhost:4000/bookings/payments/:payment_id
+PUT http://localhost:4000/bookings/payments/1
+{
+    "value": 200000,
+    "quota": 4,
+    "card_number": "1234-5678-9012-3456",
+    "cvc": "456",
+    "request_payment": "partial",
+    "date": "2024-05-26"
+}
+
+//getAll bookings : it's body not necessary for get all bookings
+GET http://localhost:4000/bookings/
+
+#
+#
+#
+
+# Comments
+
+// Create comment : This is the url that is used to create a comment for the forum and responses to comments can be created based on it.
+POST http://localhost:4000/comments/
+{
+    "name": "prueba numero 1",
+    "description": "Descripción de prueba, para ver si los comentarios si se estan creadon"
+}
+
+// create replyComment : This is the url with which the responses to the base comments are created http://localhost:4000/comments/:comment_id/reply.
+POST http://localhost:4000/comments/1/reply
+{
+    "name": "prueba numero 1 respuesta",
+    "description": "Descripcion de prueba de respuest a un comentario para ver si se necesitan hacer cambios"
+}
+
+//update comment : With this url you can update the base comments.
+PUT http://localhost:4000/comments/1
+{
+    "name": "prueba numero 1 actualizacion",
+    "description": "Descripción de prueba, para ver si los comentarios si se estan creadon"
+}
+
+//update reply :
+PUT http://localhost:4000/reply/1
+{
+    "name": "prueba numero 1 actualizacion",
+    "description": "Descripción de prueba, para ver si los comentarios si se estan creadon"
+}
+
+//getAll comments : it's body not necessary for get all comments.
+GET http://localhost:4000/comments/

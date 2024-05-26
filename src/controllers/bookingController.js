@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 // Crear una reserva con el pago correspondiente
 exports.createBooking = async (req, res) => {
     try {
-        const { tour_id, value, quota, card_number, cvc, request_payment, date } = req.body;
+        const { tour_id } = req.params;
+        const { value, quota, card_number, cvc, request_payment, date } = req.body;
         const token = req.header('Authorization')?.split(' ')[1];
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -12,14 +13,15 @@ exports.createBooking = async (req, res) => {
 
         console.log('Data recibida:', req.body);
         console.log('User ID:', userId);
+        console.log('Tour ID:', tour_id);
 
         const paymentData = { value, quota, card_number, cvc, request_payment, date };
         const result = await bookingModel.createBooking(userId, tour_id, paymentData);
 
-        if (result.success) {
+        if (result && result.success) {
             res.status(201).json({ message: 'Reserva creada exitosamente', bookingId: result.bookingId, paymentId: result.paymentId });
         } else {
-            res.status(500).json({ message: 'Error en el servidor' });
+            res.status(500).json({ message: 'Error en el servidor', error: result.error });
         }
     } catch (error) {
         console.error('Error en createBooking controller:', error);
@@ -90,6 +92,18 @@ exports.deletePayment = async (req, res) => {
         }
     } catch (error) {
         console.error('Error en deletePayment controller:', error);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+};
+
+// Obtener todas las reservas
+exports.getAllBookings = async (req, res) => {
+    try {
+        const bookings = await bookingModel.getAllBookings();
+
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error('Error en getAllBookings controller:', error);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 };
